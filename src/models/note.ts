@@ -1,4 +1,4 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document } from 'mongoose';
 
 export interface NoteModel extends Document {
   heading: string;
@@ -19,4 +19,4 @@ const Schema = new mongoose.Schema(
   }
 );
 
-export const noteModel = mongoose.model<NoteModel>("Notes", Schema);
+export const noteModel = mongoose.model<NoteModel>('Notes', Schema);

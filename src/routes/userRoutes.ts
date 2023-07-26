@@ -3,14 +3,20 @@ import {
   getAllNotes,
   editNote,
   deleteNote,
-} from "../controller/userController";
-import express from "express";
+} from '../controller/userController';
+import { userSignUp } from '../controller/userAuth';
+import express from 'express';
+import { validateUserSchema } from '../middleware/user/validateUserSchema';
 
-const app = express();
+const router = express.Router();
 
-app.get("/all-notes", getAllNotes);
-app.post("/new-note", addNewNote);
-app.patch("/edit-note/:id", editNote);
-app.get("/delete-note/:id", deleteNote);
+/* Login Routes */
+router.post('/signup', validateUserSchema, userSignUp);
 
-export default app;
+/* Notes Routes */
+router.get('/all-notes', getAllNotes);
+router.post('/new-note', addNewNote);
+router.patch('/edit-note/:id', editNote);
+router.get('/delete-note/:id', deleteNote);
+
+export default router;

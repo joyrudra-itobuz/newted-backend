@@ -1,8 +1,8 @@
-import express, { Request, Response, NextFunction } from "express";
-import cors from "cors";
-import "dotenv/config";
-import { db } from "./connection/dbConnection";
-import userRoutes from "./routes/userRoutes";
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import 'dotenv/config';
+import { db } from './connection/dbConnection';
+import userRoutes from './routes/userRoutes';
 
 db;
 
@@ -15,22 +15,22 @@ app.use(express.json());
 
 app.use(userRoutes);
 
-app.get("/hello", (req, res, next) => {
+app.get('/hello', (req, res, next) => {
   res.status(200).send({
-    data: "HELLO From Server! 😁👋🏻 ",
-    message: "OK",
+    data: 'HELLO From Server! 😁👋🏻 ',
+    message: 'OK',
     success: true,
   });
 });
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new Error("Route Not found!"));
+  next(new Error('Route Not found!'));
 });
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   res.status(404).send({
     data: null,
-    message: error?.message ?? "Oops There was Some Error!",
+    message: error?.message ?? 'Oops There was Some Error!',
     success: false,
   });
 });

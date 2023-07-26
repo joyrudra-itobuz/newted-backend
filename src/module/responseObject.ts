@@ -1,4 +1,4 @@
-import { NoteModel } from "../models/note";
+import { NoteModel } from '../models/note';
 
 interface Response {
   data: any;
