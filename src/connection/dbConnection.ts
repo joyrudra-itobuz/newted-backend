@@ -5,9 +5,13 @@ const userName = process.env.MONGO_USERNAME;
 const password = process.env.MONGO_PASSWORD;
 const cluster = process.env.MONGO_CLUSTER;
 
-mongoose.connect(
-  `mongodb+srv://${userName}:${password}@${cluster}.mongodb.net/`
-);
+try {
+  mongoose.connect(
+    `mongodb+srv://${userName}:${password}@${cluster}.mongodb.net/`
+  );
+} catch (error) {
+  console.log(error);
+}
 
 export const db = mongoose.connection;
 
@@ -19,6 +23,8 @@ db.on("connection", () => {
   console.log("Database CONNECTED! ✅");
 });
 
-db.on("error", (err) => {
-  console.log("OOPS Failed to CONNECT! ❌ \n Here's Your ERROR : ", err);
+db.on("error", async (err) => {
+  console.log("OOPS Failed to CONNECT! ❌ \n Here's Your ERROR : ", err),
+    " \nDisconnected!";
+  await mongoose.disconnect();
 });

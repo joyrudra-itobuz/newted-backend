@@ -9,19 +9,15 @@ import {
 } from "http-status-codes";
 
 export const addNewNote: RequestHandler = async (req, res, next) => {
-  if (!req.body.heading) {
-    return res
-      .status(404)
-      .send(response(null, "Failed To Add a New Note 🙁!", false));
-  }
-
   try {
+    if (!req.body.heading) {
+      throw new Error("Failed To Add a New Note 🙁!");
+    }
+
     const result = new noteModel(req.body);
 
     if (!result) {
-      return res
-        .status(404)
-        .send(response(null, "Failed To Add a New Note 🙁!", false));
+      throw new Error("Failed To Add a New Note 🙁!");
     }
 
     const newNote = await result.save();
@@ -33,7 +29,7 @@ export const addNewNote: RequestHandler = async (req, res, next) => {
         .send(response(note, "Note Added Successfully ✅!", true));
     }
   } catch (error: any) {
-    return next(error);
+    next(error);
   }
 };
 
@@ -42,29 +38,25 @@ export const getAllNotes: RequestHandler = async (req, res, next) => {
     const result = await noteModel.find();
 
     if (!result) {
-      return res
-        .status(404)
-        .send(response(null, "Failed To Fetch The Notes 🙁!", false));
+      throw new Error("Failed To Fetch The Notes 🙁!");
     }
 
     return res
       .status(200)
       .send(response(result, "Here are all the Notes 📖!", true));
   } catch (error: any) {
-    return next(error);
+    next(error);
   }
 };
 
 export const editNote: RequestHandler = async (req, res, next) => {
-  const noteID = req.body._id;
-  const updatedData = req.body;
-
-  if (!noteID) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .send(response(null, "Note Not Found 🙁!", false));
-  }
   try {
+    const noteID = req.params.id;
+    const updatedData = req.body;
+    if (!noteID) {
+      throw new Error("Note Not Found 🙁!");
+    }
+
     const result = await noteModel.findByIdAndUpdate(noteID, updatedData, {
       new: true,
       runValidators: true,
@@ -77,9 +69,34 @@ export const editNote: RequestHandler = async (req, res, next) => {
     } else {
       throw new Error("Couldn't Update The Note 🙁!");
     }
-  } catch (error) {
-    return next(error);
+  } catch (error: any) {
+    next(error);
   }
 };
 
-export const deleteNote: RequestHandler = async (req, res, next) => {};
+export const deleteNote: RequestHandler = async (req, res, next) => {
+  try {
+    const noteID = req.params.id;
+    if (!noteID) {
+      throw new Error("Note Not Found 🙁!");
+    }
+
+    const result = await noteModel.findByIdAndUpdate(
+      { _id: noteID },
+      { $set: { isDeleted: true } },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+    if (result) {
+      return res
+        .status(StatusCodes.OK)
+        .send(response(result, "Note has been Deleted Successfuly 🗑️!", true));
+    } else {
+      throw new Error("Couldn't Delete The Note 🙁!");
+    }
+  } catch (error: any) {
+    next(error);
+  }
+};

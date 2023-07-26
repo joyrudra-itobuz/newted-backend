@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { Db } from "mongodb";
 import "dotenv/config";
 import { db } from "./connection/dbConnection";
 import userRoutes from "./routes/userRoutes";
@@ -25,17 +24,15 @@ app.get("/hello", (req, res, next) => {
 });
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new Error("Page Not found!"));
+  next(new Error("Route Not found!"));
 });
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  if (err) {
-    res.status(404).send({
-      data: null,
-      message: err.message,
-      success: false,
-    });
-  }
+app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+  res.status(404).send({
+    data: null,
+    message: error?.message ?? "Oops There was Some Error!",
+    success: false,
+  });
 });
 
 export const server = app.listen(process.env.PORT || 7700, () => {
