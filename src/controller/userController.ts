@@ -63,8 +63,6 @@ export class UserController {
 
       const token: string = generateToken(existingUser._id);
 
-      console.log(token);
-
       res
         .status(StatusCodes.OK)
         .send(response({ token }, 'Welcome Back To Nowted 👋🏻😄!', true));
