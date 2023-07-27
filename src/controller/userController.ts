@@ -1,111 +1,168 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { response } from '../module/responseObject';
 import { noteModel, NoteModel } from '../models/note';
-import {
-  ReasonPhrases,
-  StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
-} from 'http-status-codes';
+import User, { IUser } from '../models/user';
+import { IExistingUserRequest } from '../middleware/user/validateUserSchema';
+import jwt from 'jsonwebtoken';
+import { StatusCodes } from '../helper/constants';
+import config from '../../config';
 
-// export class UserController {
-//   async test() {
-//     console.log('test');
+console.log(StatusCodes.ACCEPTED);
 
-//   }
-// }
-// const uc = new UserController();
-// uc.test()
+const JWT_SECRET = config.JWT_SECRET;
 
-export const addNewNote: RequestHandler = async (req, res, next) => {
-  try {
-    if (!req.body.heading) {
-      throw new Error('Failed To Add a New Note 🙁!');
-    }
+export class UserController {
+  async userSignUp(
+    req: Request | IExistingUserRequest | any,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { existingUser } = req;
 
-    const result = new noteModel(req.body);
+      console.log(existingUser);
 
-    if (!result) {
-      throw new Error('Failed To Add a New Note 🙁!');
-    }
+      const { username, password, email, phoneNumber } = req.body;
 
-    const newNote = await result.save();
+      /* Check if the username already exists in the database */
 
-    if (newNote) {
-      const note = await noteModel.findOne({ _id: newNote.id });
-      return res
-        .status(200)
-        .send(response({ note }, 'Note Added Successfully ✅!', true));
-    }
-  } catch (error: any) {
-    next(error);
-  }
-};
+      if (existingUser) {
+        throw new Error('You already have an account');
+      }
 
-export const getAllNotes: RequestHandler = async (req, res, next) => {
-  try {
-    const result = await noteModel.find();
+      /* Create a new user */
+      const newUser: IUser = new User({ username, password, email });
 
-    if (!result) {
-      throw new Error('Failed To Fetch The Notes 🙁!');
-    }
+      await newUser.save();
 
-    return res
-      .status(200)
-      .send(response(result, 'Here are all the Notes 📖!', true));
-  } catch (error: any) {
-    next(error);
-  }
-};
+      /* Create a JWT token and send it in the response */
+      const token: string = jwt.sign({ userId: newUser._id }, JWT_SECRET);
 
-export const editNote: RequestHandler = async (req, res, next) => {
-  try {
-    const noteID = req.params.id;
-    const updatedData = req.body;
-    if (!noteID) {
-      throw new Error('Note Not Found 🙁!');
-    }
-
-    const result = await noteModel.findByIdAndUpdate(noteID, updatedData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (result) {
-      return res
+      res
         .status(StatusCodes.OK)
-        .send(response(result, 'Note has been Updated ✅!', true));
-    } else {
-      throw new Error("Couldn't Update The Note 🙁!");
+        .send(response({ token }, 'New User Added Successfully!', true));
+    } catch (error) {
+      next(error);
     }
-  } catch (error: any) {
-    next(error);
   }
-};
 
-export const deleteNote: RequestHandler = async (req, res, next) => {
-  try {
-    const noteID = req.params.id;
-    if (!noteID) {
-      throw new Error('Note Not Found 🙁!');
+  async userSignIn(
+    req: IExistingUserRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { existingUser } = req;
+      const { username, password, email, phoneNumber } = req.body;
+
+      if (existingUser) {
+        throw new Error('You already have an account');
+      }
+    } catch (error) {
+      next(error);
     }
+  }
 
-    const result = await noteModel.findByIdAndUpdate(
-      { _id: noteID },
-      { $set: { isDeleted: true } },
-      {
+  async addNewNote(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.body.heading) {
+        throw new Error('Failed To Add a New Note 🙁!');
+      }
+
+      const result = new noteModel(req.body);
+
+      if (!result) {
+        throw new Error('Failed To Add a New Note 🙁!');
+      }
+
+      const newNote = await result.save();
+
+      if (newNote) {
+        const note = await noteModel.findOne({ _id: newNote.id });
+        return res
+          .status(200)
+          .send(response({ note }, 'Note Added Successfully ✅!', true));
+      }
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async getAllNotes(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.body.heading) {
+        throw new Error('Failed To Add a New Note 🙁!');
+      }
+
+      const result = new noteModel(req.body);
+
+      if (!result) {
+        throw new Error('Failed To Add a New Note 🙁!');
+      }
+
+      const newNote = await result.save();
+
+      if (newNote) {
+        const note = await noteModel.findOne({ _id: newNote.id });
+        return res
+          .status(200)
+          .send(response({ note }, 'Note Added Successfully ✅!', true));
+      }
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async editNote(req: Request, res: Response, next: NextFunction) {
+    try {
+      const noteID = req.params.id;
+      const updatedData = req.body;
+      if (!noteID) {
+        throw new Error('Note Not Found 🙁!');
+      }
+
+      const result = await noteModel.findByIdAndUpdate(noteID, updatedData, {
         new: true,
         runValidators: true,
+      });
+
+      if (result) {
+        return res
+          .status(StatusCodes.OK)
+          .send(response(result, 'Note has been Updated ✅!', true));
+      } else {
+        throw new Error("Couldn't Update The Note 🙁!");
       }
-    );
-    if (result) {
-      return res
-        .status(StatusCodes.OK)
-        .send(response(result, 'Note has been Deleted Successfuly 🗑️!', true));
-    } else {
-      throw new Error("Couldn't Delete The Note 🙁!");
+    } catch (error: any) {
+      next(error);
     }
-  } catch (error: any) {
-    next(error);
   }
-};
+  async deleteNote(req: Request, res: Response, next: NextFunction) {
+    try {
+      const noteID = req.params.id;
+      if (!noteID) {
+        throw new Error('Note Not Found 🙁!');
+      }
+
+      const result = await noteModel.findByIdAndUpdate(
+        { _id: noteID },
+        { $set: { isDeleted: true } },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      if (result) {
+        return res
+          .status(StatusCodes.OK)
+          .send(
+            response(result, 'Note has been Deleted Successfuly 🗑️!', true)
+          );
+      } else {
+        throw new Error("Couldn't Delete The Note 🙁!");
+      }
+    } catch (error: any) {
+      next(error);
+    }
+  }
+}

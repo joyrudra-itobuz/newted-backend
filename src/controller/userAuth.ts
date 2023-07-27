@@ -4,9 +4,6 @@ import User, { IUser } from '../models/user';
 import { StatusCodes } from 'http-status-codes';
 import { response } from '../module/responseObject';
 import config from '../../config';
-import { REG_EX } from '../helper/constants';
-import { formatChecker } from '../helper/formatChecker';
-import { userSchema } from '../validators/userSchema';
 
 const JWT_SECRET = config.JWT_SECRET;
 
