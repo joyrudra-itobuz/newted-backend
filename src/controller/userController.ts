@@ -98,24 +98,15 @@ export class UserController {
 
   async getAllNotes(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.body.heading) {
-        throw new Error('Failed To Add a New Note 🙁!');
-      }
-
-      const result = new noteModel(req.body);
+      const result = await noteModel.find({ isDeleted: false });
 
       if (!result) {
-        throw new Error('Failed To Add a New Note 🙁!');
+        throw new Error('No Notes Found 🙁!');
       }
 
-      const newNote = await result.save();
-
-      if (newNote) {
-        const note = await noteModel.findOne({ _id: newNote.id });
-        return res
-          .status(200)
-          .send(response({ note }, 'Note Added Successfully ✅!', true));
-      }
+      res
+        .status(StatusCodes.OK)
+        .send(response(result, 'Note Added Successfully ✅!', true));
     } catch (error: any) {
       next(error);
     }
