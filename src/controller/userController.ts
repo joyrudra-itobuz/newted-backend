@@ -6,10 +6,13 @@ import { IExistingUserRequest } from '../middleware/user/validateUserSchema';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from '../helper/constants';
 import config from '../../config';
-
-console.log(StatusCodes.ACCEPTED);
+import { string } from 'joi';
 
 const JWT_SECRET = config.JWT_SECRET;
+
+function generateToken(id: string) {
+  return jwt.sign({ userId: id }, JWT_SECRET);
+}
 
 export class UserController {
   async userSignUp(
@@ -36,7 +39,9 @@ export class UserController {
       await newUser.save();
 
       /* Create a JWT token and send it in the response */
-      const token: string = jwt.sign({ userId: newUser._id }, JWT_SECRET);
+      const token: string = generateToken(newUser._id);
+
+      console.log(token);
 
       res
         .status(StatusCodes.OK)
@@ -46,18 +51,23 @@ export class UserController {
     }
   }
 
-  async userSignIn(
-    req: IExistingUserRequest,
-    res: Response,
-    next: NextFunction
-  ) {
+  async userSignIn(req: Response | any, res: Response, next: NextFunction) {
     try {
       const { existingUser } = req;
-      const { username, password, email, phoneNumber } = req.body;
 
-      if (existingUser) {
-        throw new Error('You already have an account');
+      if (!existingUser) {
+        throw new Error(`You don't have an account! Please Create One.`);
       }
+
+      console.log(existingUser._id);
+
+      const token: string = generateToken(existingUser._id);
+
+      console.log(token);
+
+      res
+        .status(StatusCodes.OK)
+        .send(response({ token }, 'Welcome Back To Nowted 👋🏻😄!', true));
     } catch (error) {
       next(error);
     }

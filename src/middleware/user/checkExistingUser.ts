@@ -3,7 +3,7 @@ import User, { IUser } from '../../models/user';
 import { IExistingUserRequest } from '../../middleware/user/validateUserSchema';
 
 export const checkExistingUser: any = async (
-  req: IExistingUserRequest | Response | any,
+  req: Response | any,
   res: Response,
   next: NextFunction
 ) => {

@@ -13,7 +13,11 @@ router.post(
   [validateUserSchema, checkExistingUser],
   userController.userSignUp
 );
-// router.post('/signin', validateUserSchema);
+router.post(
+  '/signin',
+  [validateUserSchema, checkExistingUser],
+  userController.userSignIn
+);
 
 /* Notes Routes */
 router.get('/all-notes', userController.getAllNotes);
