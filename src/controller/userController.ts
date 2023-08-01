@@ -6,12 +6,15 @@ import { IExistingUserRequest } from '../middleware/user/validateUserSchema';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from '../helper/constants';
 import config from '../../config';
-import { string } from 'joi';
 
 const JWT_SECRET = config.JWT_SECRET;
 
+interface JwtPayload {
+  userId: string;
+}
+
 function generateToken(id: string) {
-  return jwt.sign({ userId: id }, JWT_SECRET);
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: config.expiresIn });
 }
 
 export class UserController {
@@ -41,8 +44,6 @@ export class UserController {
       /* Create a JWT token and send it in the response */
       const token: string = generateToken(newUser._id);
 
-      console.log(token);
-
       res
         .status(StatusCodes.OK)
         .send(response({ token }, 'New User Added Successfully!', true));
@@ -66,6 +67,28 @@ export class UserController {
       res
         .status(StatusCodes.OK)
         .send(response({ token }, 'Welcome Back To Nowted 👋🏻😄!', true));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async verifyUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        throw new Error('Token Not Found!');
+      }
+
+      const { userId } = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+      if (!userId) {
+        throw new Error('Token Expired!');
+      }
+
+      res
+        .status(StatusCodes.OK)
+        .send(response(null, 'User Verified Successfully', true));
     } catch (error) {
       next(error);
     }

@@ -18,6 +18,7 @@ router.post(
   [validateUserSchema, checkExistingUser],
   userController.userSignIn
 );
+router.get('/verify-user/:token', userController.verifyUser);
 
 /* Notes Routes */
 router.get('/all-notes', userController.getAllNotes);
