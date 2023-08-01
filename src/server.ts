@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 import { db } from './connection/dbConnection';
 import userRoutes from './routes/userRoutes';
+import loggerMiddleware from './middleware/user/express/loggermiddleware';
 
 db;
 
@@ -10,6 +11,7 @@ export const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(loggerMiddleware);
 
 /* Adding User Routes */
 

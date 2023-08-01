@@ -1,5 +1,5 @@
 import { NextFunction, RequestHandler, Response, Request } from 'express';
-import { userSchema } from '../../validators/userSchema';
+import { userSchema, userLoginSchema } from '../../validators/userSchema';
 import { StatusCodes } from 'http-status-codes';
 import { response } from '../../module/responseObject';
 import { IUser } from '../../models/user';
@@ -14,6 +14,24 @@ export const validateUserSchema = (
   next: NextFunction
 ) => {
   const { error } = userSchema.validate(req.body);
+
+  if (error) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .send(
+        response(null, `Improper Arguments ${error.details[0].message}`, false)
+      );
+  }
+
+  next();
+};
+
+export const validateUserLoginSchema = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { error } = userLoginSchema.validate(req.body);
 
   if (error) {
     return res

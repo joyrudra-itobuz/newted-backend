@@ -7,3 +7,10 @@ export const userSchema = Joi.object({
   email: Joi.string().pattern(REG_EX.emailFormat).required(),
   phoneNumber: Joi.string().pattern(REG_EX.phoneNumberRegex).optional(),
 });
+
+export const userLoginSchema = Joi.object({
+  username: Joi.string().pattern(REG_EX.usernameFormat).required(),
+  password: Joi.string().required(),
+  email: Joi.string().pattern(REG_EX.emailFormat).required().optional(),
+  phoneNumber: Joi.string().pattern(REG_EX.phoneNumberRegex).optional(),
+});

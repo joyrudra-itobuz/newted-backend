@@ -1,6 +1,9 @@
 import { UserController } from '../controller/userController';
 import express from 'express';
-import { validateUserSchema } from '../middleware/user/validateUserSchema';
+import {
+  validateUserSchema,
+  validateUserLoginSchema,
+} from '../middleware/user/validateUserSchema';
 import { checkExistingUser } from '../middleware/user/checkExistingUser';
 
 const router = express.Router();
@@ -15,7 +18,7 @@ router.post(
 );
 router.post(
   '/signin',
-  [validateUserSchema, checkExistingUser],
+  [validateUserLoginSchema, checkExistingUser],
   userController.userSignIn
 );
 router.get('/verify-user/:token', userController.verifyUser);

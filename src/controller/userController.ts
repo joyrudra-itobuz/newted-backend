@@ -6,6 +6,7 @@ import { IExistingUserRequest } from '../middleware/user/validateUserSchema';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from '../helper/constants';
 import config from '../../config';
+import bcrypt from 'bcrypt';
 
 const JWT_SECRET = config.JWT_SECRET;
 
@@ -55,18 +56,20 @@ export class UserController {
   async userSignIn(req: Response | any, res: Response, next: NextFunction) {
     try {
       const { existingUser } = req;
+      const { password } = req.body;
 
       if (!existingUser) {
         throw new Error(`You don't have an account! Please Create One.`);
       }
 
-      console.log(existingUser._id);
-
-      const token: string = generateToken(existingUser._id);
-
-      res
-        .status(StatusCodes.OK)
-        .send(response({ token }, 'Welcome Back To Nowted 👋🏻😄!', true));
+      if (await bcrypt.compare(password, existingUser.password)) {
+        const token: string = generateToken(existingUser._id);
+        res
+          .status(StatusCodes.OK)
+          .send(response({ token }, 'Welcome Back To Nowted 👋🏻😄!', true));
+      } else {
+        throw new Error('Wrong Password!');
+      }
     } catch (error) {
       next(error);
     }
