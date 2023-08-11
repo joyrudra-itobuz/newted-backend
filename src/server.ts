@@ -30,7 +30,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-  res.status(404).send({
+  console.trace(error);
+  res.status(401).send({
     data: null,
     message: error?.message ?? 'Oops There was Some Error!',
     success: false,

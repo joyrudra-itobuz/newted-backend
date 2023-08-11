@@ -10,6 +10,8 @@ import bcrypt from 'bcrypt';
 
 const JWT_SECRET = config.JWT_SECRET;
 
+console.log(config.expiresIn);
+
 interface JwtPayload {
   userId: string;
 }
@@ -29,7 +31,7 @@ export class UserController {
 
       console.log(existingUser);
 
-      const { username, password, email, phoneNumber } = req.body;
+      const { username, password, email } = req.body;
 
       /* Check if the username already exists in the database */
 
@@ -64,6 +66,7 @@ export class UserController {
 
       if (await bcrypt.compare(password, existingUser.password)) {
         const token: string = generateToken(existingUser._id);
+        console.log(token);
         res
           .status(StatusCodes.OK)
           .send(response({ token }, 'Welcome Back To Nowted 👋🏻😄!', true));
@@ -77,6 +80,8 @@ export class UserController {
 
   async verifyUser(req: Request, res: Response, next: NextFunction) {
     try {
+      console.log(req.params);
+
       const { token } = req.params;
 
       if (!token) {
@@ -84,6 +89,8 @@ export class UserController {
       }
 
       const { userId } = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+      console.log({ userId });
 
       if (!userId) {
         throw new Error('Token Expired!');
